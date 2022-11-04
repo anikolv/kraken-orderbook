@@ -13,7 +13,7 @@ import com.kraken.orderbook.service.OrderbookService;
 public class OrderbookServiceImpl implements OrderbookService {
 	
 	@EventListener(ApplicationReadyEvent.class)
-	public void testWebsocket() {
+	public void openOrderbooSocket() {
 		WebSocketConnectionManager connectionManager = new WebSocketConnectionManager(
 				new StandardWebSocketClient(), 
 				new SocketHandler(), 
@@ -21,5 +21,5 @@ public class OrderbookServiceImpl implements OrderbookService {
 		
 		connectionManager.start();
 	}
-
+	
 }
