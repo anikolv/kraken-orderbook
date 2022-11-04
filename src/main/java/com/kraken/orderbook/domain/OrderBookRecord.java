@@ -4,6 +4,7 @@ public class OrderBookRecord implements Comparable<OrderBookRecord> {
 
 	private Double price;
 	private Long volume;
+	private String timestamp;
 
 	public Double getPrice() {
 		return price;
@@ -19,6 +20,14 @@ public class OrderBookRecord implements Comparable<OrderBookRecord> {
 
 	public void setVolume(Long volume) {
 		this.volume = volume;
+	}
+
+	public String getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
 	}
 
 	@Override
