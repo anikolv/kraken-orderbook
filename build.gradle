@@ -15,8 +15,10 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-	implementation group: 'org.springframework', name: 'spring-webflux', version: '5.3.23'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.13.4'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
 }
 
 tasks.named('test') {
