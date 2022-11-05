@@ -13,10 +13,60 @@ public class OrderBookService {
 
 	private List<KrakenOrderBook> orderBooks = new ArrayList<>();
 
-	public void addAskRecord(String pair, OrderBookRecord record) {
-		if (orderBooks
-				.stream()
-				.anyMatch(b -> b.getCurrencyPair().equals(pair))) {
+	public void handleAskUpdateEvent(String pair, OrderBookRecord updateData) {
+		for (KrakenOrderBook orderBook : orderBooks) {
+			if (orderBook.getCurrencyPair().equals(pair)) {
+				// handle delete event
+				if (updateData.getVolume().equals(0.0d)) {
+					orderBook.getAsks().removeIf(ask -> ask.getPrice().equals(updateData.getPrice()));
+					return;
+				}
+
+				// handle insert event
+				boolean isNewAsk = orderBook.getAsks().stream()
+						.noneMatch(ask -> ask.getPrice().equals(updateData.getPrice()));
+				if (isNewAsk) {
+					orderBook.addAsk(updateData);
+					return;
+				}
+
+				// handle update event
+				for (OrderBookRecord ask : orderBook.getAsks()) {
+					if (ask.getPrice().equals(updateData.getPrice())) {
+						ask.setVolume(updateData.getVolume());
+					}
+				}
+			}
+		}
+	}
+
+	public void handleBidUpdateEvent(String pair, OrderBookRecord updateData) {
+		for (KrakenOrderBook orderBook : orderBooks) {
+			if (orderBook.getCurrencyPair().equals(pair)) {
+				// handle delete event
+				if (updateData.getVolume().equals(0.0d)) {
+					orderBook.getBids().removeIf(bid -> bid.getPrice().equals(updateData.getPrice()));
+					return;
+				}
+
+				// handle insert event
+				if (orderBook.getBids().stream().noneMatch(bid -> bid.getPrice().equals(updateData.getPrice()))) {
+					orderBook.addBid(updateData);
+					return;
+				}
+
+				// handle update event
+				for (OrderBookRecord bid : orderBook.getBids()) {
+					if (bid.getPrice().equals(updateData.getPrice())) {
+						bid.setVolume(updateData.getVolume());
+					}
+				}
+			}
+		}
+	}
+
+	public void handleAskSnapshotEvent(String pair, OrderBookRecord record) {
+		if (orderBooks.stream().anyMatch(b -> b.getCurrencyPair().equals(pair))) {
 			for (KrakenOrderBook krakenOrderBook : orderBooks) {
 				if (krakenOrderBook.getCurrencyPair().equals(pair)) {
 					krakenOrderBook.addAsk(record);
@@ -29,7 +79,7 @@ public class OrderBookService {
 		}
 	}
 
-	public void addBidsRecord(String pair, OrderBookRecord record) {
+	public void handleBidSnapshotEvent(String pair, OrderBookRecord record) {
 		if (orderBooks.isEmpty()) {
 			KrakenOrderBook orderBook = new KrakenOrderBook(pair);
 			orderBook.addBid(record);
@@ -45,13 +95,13 @@ public class OrderBookService {
 
 	public void printOrderBook() {
 		Iterator<KrakenOrderBook> orderBookIterator = orderBooks.iterator();
-		
+
 		while (orderBookIterator.hasNext()) {
 			KrakenOrderBook pairOrderBook = orderBookIterator.next();
-			
+
 			System.out.println("asks:");
 			System.out.print("[ ");
-			
+
 			Iterator<OrderBookRecord> asksIterator = pairOrderBook.getAsks().iterator();
 			while (asksIterator.hasNext()) {
 				OrderBookRecord ask = asksIterator.next();
@@ -61,17 +111,16 @@ public class OrderBookService {
 				}
 			}
 			System.out.println(" ]");
-			
+
 			OrderBookRecord bestBid = pairOrderBook.getBids().stream().findFirst().get();
 			System.out.println("best bid: [ " + bestBid.getPrice() + ", " + bestBid.getVolume() + " ]");
-			
+
 			OrderBookRecord bestAsk = Iterables.getLast(pairOrderBook.getAsks());
 			System.out.println("best ask: [ " + bestAsk.getPrice() + ", " + bestAsk.getVolume() + " ]");
-			
 
 			System.out.println("bids:");
 			System.out.print("[ ");
-			
+
 			Iterator<OrderBookRecord> bidsIterator = pairOrderBook.getBids().iterator();
 			while (bidsIterator.hasNext()) {
 				OrderBookRecord bid = bidsIterator.next();
@@ -88,5 +137,4 @@ public class OrderBookService {
 			System.out.println("<------------------------------------->");
 		}
 	}
-
 }

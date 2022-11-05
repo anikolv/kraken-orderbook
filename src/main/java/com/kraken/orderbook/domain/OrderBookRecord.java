@@ -1,6 +1,6 @@
 package com.kraken.orderbook.domain;
 
-public class OrderBookRecord implements Comparable<OrderBookRecord> {
+public class OrderBookRecord {
 
 	private Double price;
 	private Double volume;
@@ -25,14 +25,4 @@ public class OrderBookRecord implements Comparable<OrderBookRecord> {
 	public void setVolume(Double volume) {
 		this.volume = volume;
 	}
-
-	@Override
-	public int compareTo(OrderBookRecord inboundRecord) {
-		if (this.price < inboundRecord.getPrice())
-			return -1;
-		else if (inboundRecord.getPrice() < this.price)
-			return 1;
-		return 0;
-	}
-
 }
