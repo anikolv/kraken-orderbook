@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.collect.Iterables;
 import com.kraken.orderbook.domain.KrakenOrderBook;
 import com.kraken.orderbook.domain.OrderBookRecord;
 
@@ -13,16 +14,18 @@ public class OrderBookService {
 	private List<KrakenOrderBook> orderBooks = new ArrayList<>();
 
 	public void addAskRecord(String pair, OrderBookRecord record) {
-		if (orderBooks.isEmpty()) {
-			KrakenOrderBook orderBook = new KrakenOrderBook(pair);
-			orderBook.addAsk(record);
-			orderBooks.add(orderBook);
-		} else {
+		if (orderBooks
+				.stream()
+				.anyMatch(b -> b.getCurrencyPair().equals(pair))) {
 			for (KrakenOrderBook krakenOrderBook : orderBooks) {
 				if (krakenOrderBook.getCurrencyPair().equals(pair)) {
 					krakenOrderBook.addAsk(record);
 				}
 			}
+		} else {
+			KrakenOrderBook orderBook = new KrakenOrderBook(pair);
+			orderBook.addAsk(record);
+			orderBooks.add(orderBook);
 		}
 	}
 
@@ -41,7 +44,6 @@ public class OrderBookService {
 	}
 
 	public void printOrderBook() {
-		System.out.println("<------------------------------------->");
 		Iterator<KrakenOrderBook> orderBookIterator = orderBooks.iterator();
 		
 		while (orderBookIterator.hasNext()) {
@@ -59,6 +61,13 @@ public class OrderBookService {
 				}
 			}
 			System.out.println(" ]");
+			
+			OrderBookRecord bestBid = pairOrderBook.getBids().stream().findFirst().get();
+			System.out.println("best bid: [ " + bestBid.getPrice() + ", " + bestBid.getVolume() + " ]");
+			
+			OrderBookRecord bestAsk = Iterables.getLast(pairOrderBook.getAsks());
+			System.out.println("best ask: [ " + bestAsk.getPrice() + ", " + bestAsk.getVolume() + " ]");
+			
 
 			System.out.println("bids:");
 			System.out.print("[ ");
@@ -78,8 +87,6 @@ public class OrderBookService {
 			System.out.println(">-------------------------------------<");
 			System.out.println("<------------------------------------->");
 		}
-		
-		System.out.println(">-------------------------------------<");
 	}
 
 }

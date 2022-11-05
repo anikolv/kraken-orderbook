@@ -62,7 +62,7 @@ public class SocketHandler extends TextWebSocketHandler {
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 		System.out.println("Connected");
 
-		OrderBookRequest orderBookRequest = new OrderBookRequest("subscribe", "book", Arrays.asList("ETC/USD"));
+		OrderBookRequest orderBookRequest = new OrderBookRequest("subscribe", "book", Arrays.asList("BTC/USD", "ETC/USD"));
 		String payload = objectMapper.writeValueAsString(orderBookRequest);
 
 		System.out.println("Sending [" + payload + "]");
