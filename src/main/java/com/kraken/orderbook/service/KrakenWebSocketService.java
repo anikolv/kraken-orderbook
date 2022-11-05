@@ -1,4 +1,4 @@
-package com.kraken.orderbook.service.impl;
+package com.kraken.orderbook.service;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -7,10 +7,9 @@ import org.springframework.web.socket.client.WebSocketConnectionManager;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import com.kraken.orderbook.handler.SocketHandler;
-import com.kraken.orderbook.service.OrderbookService;
 
-@Service("orderbookService")
-public class OrderbookServiceImpl implements OrderbookService {
+@Service
+public class KrakenWebSocketService {
 	
 	@EventListener(ApplicationReadyEvent.class)
 	public void openOrderbooSocket() {

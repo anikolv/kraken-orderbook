@@ -5,40 +5,57 @@ import java.util.Iterator;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kraken.orderbook.domain.OrderBook;
+import com.kraken.orderbook.domain.OrderBookRecord;
 import com.kraken.orderbook.dto.OrderBookRequest;
+import com.kraken.orderbook.service.OrderBookService;
 
 public class SocketHandler extends TextWebSocketHandler {
 
-	@Autowired
-	private OrderBook orderBook;
-
+	private OrderBookService orderBookService = new OrderBookService();
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
-		System.out.println("Message Received [" + message.getPayload() + "]");
-		
+//		System.out.println("Message Received [" + message.getPayload() + "]");
+
 		if (message.getPayload().contains("as") && message.getPayload().contains("bs")) {
-			// snapshot with full book
 			JSONArray jsonarray = new JSONArray(message.getPayload());
+			String pair = (String) jsonarray.get(3);
 			JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
+
+			// fetch asks
 			JSONArray asksContainer = snapshotContainer.getJSONArray("as");
-			
+
 			Iterator<Object> asksIterator = asksContainer.iterator();
 			while (asksIterator.hasNext()) {
-				Object askPrice = asksIterator.next();
-				System.out.println();
+				JSONArray askPrice = (JSONArray) asksIterator.next();
+				String price = (String) askPrice.get(0);
+				String volume = (String) askPrice.get(1);
+
+				orderBookService.addAskRecord(pair, new OrderBookRecord(Double.valueOf(price), Double.valueOf(volume)));
 			}
-			JSONArray test = asksContainer.getJSONArray(0);
+
+			// fetch bids
+			JSONArray bidsContainer = snapshotContainer.getJSONArray("bs");
+
+			Iterator<Object> bidsIterator = bidsContainer.iterator();
+			while (bidsIterator.hasNext()) {
+				JSONArray askPrice = (JSONArray) bidsIterator.next();
+				String price = (String) askPrice.get(0);
+				String volume = (String) askPrice.get(1);
+
+				orderBookService.addBidsRecord(pair,
+						new OrderBookRecord(Double.valueOf(price), Double.valueOf(volume)));
+			}
+			orderBookService.printOrderBook();
 		}
+
 	}
 
 	@Override

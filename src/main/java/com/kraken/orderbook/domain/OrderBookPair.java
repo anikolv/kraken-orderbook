@@ -6,6 +6,10 @@ public class OrderBookPair {
 
 	private String pair;
 
+	public OrderBookPair(String pair) {
+		this.pair = pair;
+	}
+
 	public String getPair() {
 		return pair;
 	}

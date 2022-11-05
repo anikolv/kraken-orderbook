@@ -3,8 +3,12 @@ package com.kraken.orderbook.domain;
 public class OrderBookRecord implements Comparable<OrderBookRecord> {
 
 	private Double price;
-	private Long volume;
-	private String timestamp;
+	private Double volume;
+	
+	public OrderBookRecord(Double price, Double volume) {
+		this.price = price;
+		this.volume = volume;
+	}
 
 	public Double getPrice() {
 		return price;
@@ -14,20 +18,12 @@ public class OrderBookRecord implements Comparable<OrderBookRecord> {
 		this.price = price;
 	}
 
-	public Long getVolume() {
+	public Double getVolume() {
 		return volume;
 	}
 
-	public void setVolume(Long volume) {
+	public void setVolume(Double volume) {
 		this.volume = volume;
-	}
-
-	public String getTimestamp() {
-		return timestamp;
-	}
-
-	public void setTimestamp(String timestamp) {
-		this.timestamp = timestamp;
 	}
 
 	@Override
