@@ -16,6 +16,8 @@ public class KrakenOrderBookService {
 	public void handleUpdateEvent(String pair, OrderBookRecord updateData, boolean isAsk) {
 		for (KrakenOrderBook orderBook : orderBooks) {
 			if (orderBook.getCurrencyPair().equals(pair)) {
+				
+				//fetch the proper order book
 				List<OrderBookRecord> records = isAsk? orderBook.getAsks() : orderBook.getBids();
 				
 				// handle delete event
@@ -43,7 +45,6 @@ public class KrakenOrderBookService {
 					}
 				}
 			}
-			orderBook.sort();
 		}
 	}
 
@@ -80,6 +81,7 @@ public class KrakenOrderBookService {
 
 		while (orderBookIterator.hasNext()) {
 			KrakenOrderBook pairOrderBook = orderBookIterator.next();
+			pairOrderBook.sort();
 
 			System.out.println("asks:");
 			System.out.print("[ ");
