@@ -1,6 +1,7 @@
 package com.kraken.orderbook.domain;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class KrakenOrderBook {
@@ -35,5 +36,15 @@ public class KrakenOrderBook {
 
 	public void addBid(OrderBookRecord bid) {
 		this.bids.add(bid);
+	}
+	
+	public void sortAsks() {
+		Collections.sort(asks);
+		Collections.reverse(asks);
+	}
+	
+	public void sortBids() {
+		Collections.sort(bids);
+		Collections.reverse(bids);
 	}
 }

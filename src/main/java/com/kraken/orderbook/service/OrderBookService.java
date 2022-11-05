@@ -37,6 +37,7 @@ public class OrderBookService {
 					}
 				}
 			}
+			orderBook.sortAsks();
 		}
 	}
 
@@ -62,6 +63,7 @@ public class OrderBookService {
 					}
 				}
 			}
+			orderBook.sortBids();
 		}
 	}
 
