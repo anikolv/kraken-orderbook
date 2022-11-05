@@ -48,31 +48,25 @@ public class KrakenOrderBookService {
 		}
 	}
 
-	public void handleAskSnapshotEvent(String pair, OrderBookRecord record) {
-		if (orderBooks.stream().anyMatch(b -> b.getCurrencyPair().equals(pair))) {
+	public void handleSnapshotEvent(String pair, OrderBookRecord record, boolean isAsk) {
+		if (orderBooks.stream().anyMatch(orderBook -> orderBook.getCurrencyPair().equals(pair))) {
 			for (KrakenOrderBook krakenOrderBook : orderBooks) {
 				if (krakenOrderBook.getCurrencyPair().equals(pair)) {
-					krakenOrderBook.addAsk(record);
+					if (isAsk) {
+						krakenOrderBook.addAsk(record);
+					} else {
+						krakenOrderBook.addBid(record);
+					}
 				}
 			}
 		} else {
 			KrakenOrderBook orderBook = new KrakenOrderBook(pair);
-			orderBook.addAsk(record);
-			orderBooks.add(orderBook);
-		}
-	}
-
-	public void handleBidSnapshotEvent(String pair, OrderBookRecord record) {
-		if (orderBooks.isEmpty()) {
-			KrakenOrderBook orderBook = new KrakenOrderBook(pair);
-			orderBook.addBid(record);
-			orderBooks.add(orderBook);
-		} else {
-			for (KrakenOrderBook krakenOrderBook : orderBooks) {
-				if (krakenOrderBook.getCurrencyPair().equals(pair)) {
-					krakenOrderBook.addBid(record);
-				}
+			if (isAsk) {
+				orderBook.addAsk(record);
+			} else {
+				orderBook.addBid(record);
 			}
+			orderBooks.add(orderBook);
 		}
 	}
 
@@ -120,5 +114,14 @@ public class KrakenOrderBookService {
 			System.out.println(">-------------------------------------<");
 			System.out.println("<------------------------------------->");
 		}
+	}
+	
+
+	public List<KrakenOrderBook> getOrderBooks() {
+		return orderBooks;
+	}
+	
+	public void addOrderBook(KrakenOrderBook orderBook) {
+		this.orderBooks.add(orderBook);
 	}
 }

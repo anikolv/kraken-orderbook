@@ -21,6 +21,7 @@ dependencies {
 	implementation group: 'org.json', name: 'json', version: '20220924'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 
 tasks.named('test') {
