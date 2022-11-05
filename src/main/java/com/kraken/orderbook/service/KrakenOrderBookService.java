@@ -9,61 +9,41 @@ import com.google.common.collect.Iterables;
 import com.kraken.orderbook.domain.KrakenOrderBook;
 import com.kraken.orderbook.domain.OrderBookRecord;
 
-public class OrderBookService {
+public class KrakenOrderBookService {
 
 	private List<KrakenOrderBook> orderBooks = new ArrayList<>();
 
-	public void handleAskUpdateEvent(String pair, OrderBookRecord updateData) {
+	public void handleUpdateEvent(String pair, OrderBookRecord updateData, boolean isAsk) {
 		for (KrakenOrderBook orderBook : orderBooks) {
 			if (orderBook.getCurrencyPair().equals(pair)) {
+				List<OrderBookRecord> records = isAsk? orderBook.getAsks() : orderBook.getBids();
+				
 				// handle delete event
 				if (updateData.getVolume().equals(0.0d)) {
-					orderBook.getAsks().removeIf(ask -> ask.getPrice().equals(updateData.getPrice()));
+					records.removeIf(record -> record.getPrice().equals(updateData.getPrice()));
 					return;
 				}
 
 				// handle insert event
-				boolean isNewAsk = orderBook.getAsks().stream()
-						.noneMatch(ask -> ask.getPrice().equals(updateData.getPrice()));
-				if (isNewAsk) {
-					orderBook.addAsk(updateData);
+				boolean isNewRecord = records.stream()
+						.noneMatch(record -> record.getPrice().equals(updateData.getPrice()));
+				if (isNewRecord) {
+					if (isAsk) {
+						orderBook.addAsk(updateData);
+					} else {
+						orderBook.addBid(updateData);
+					}
 					return;
 				}
 
 				// handle update event
-				for (OrderBookRecord ask : orderBook.getAsks()) {
-					if (ask.getPrice().equals(updateData.getPrice())) {
-						ask.setVolume(updateData.getVolume());
+				for (OrderBookRecord record : records) {
+					if (record.getPrice().equals(updateData.getPrice())) {
+						record.setVolume(updateData.getVolume());
 					}
 				}
 			}
-			orderBook.sortAsks();
-		}
-	}
-
-	public void handleBidUpdateEvent(String pair, OrderBookRecord updateData) {
-		for (KrakenOrderBook orderBook : orderBooks) {
-			if (orderBook.getCurrencyPair().equals(pair)) {
-				// handle delete event
-				if (updateData.getVolume().equals(0.0d)) {
-					orderBook.getBids().removeIf(bid -> bid.getPrice().equals(updateData.getPrice()));
-					return;
-				}
-
-				// handle insert event
-				if (orderBook.getBids().stream().noneMatch(bid -> bid.getPrice().equals(updateData.getPrice()))) {
-					orderBook.addBid(updateData);
-					return;
-				}
-
-				// handle update event
-				for (OrderBookRecord bid : orderBook.getBids()) {
-					if (bid.getPrice().equals(updateData.getPrice())) {
-						bid.setVolume(updateData.getVolume());
-					}
-				}
-			}
-			orderBook.sortBids();
+			orderBook.sort();
 		}
 	}
 

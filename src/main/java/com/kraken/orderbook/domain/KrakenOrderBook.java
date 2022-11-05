@@ -38,12 +38,10 @@ public class KrakenOrderBook {
 		this.bids.add(bid);
 	}
 	
-	public void sortAsks() {
+	public void sort() {
 		Collections.sort(asks);
 		Collections.reverse(asks);
-	}
-	
-	public void sortBids() {
+		
 		Collections.sort(bids);
 		Collections.reverse(bids);
 	}

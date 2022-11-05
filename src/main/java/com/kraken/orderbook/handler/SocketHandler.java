@@ -13,16 +13,15 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kraken.orderbook.domain.OrderBookRecord;
 import com.kraken.orderbook.dto.OrderBookRequest;
-import com.kraken.orderbook.service.OrderBookService;
+import com.kraken.orderbook.service.KrakenOrderBookService;
 
 public class SocketHandler extends TextWebSocketHandler {
 
-	private OrderBookService orderBookService = new OrderBookService();
+	private KrakenOrderBookService orderBookService = new KrakenOrderBookService();
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message) {
-		System.out.println("Message Received [" + message.getPayload() + "]");
 		boolean isSnapshotEvent = message.getPayload().contains("as") && message.getPayload().contains("bs");
 		boolean isAskUpdateEvent = message.getPayload().contains("\"a\"");
 		boolean isBidUpdateEvent = message.getPayload().contains("\"b\"");
@@ -34,39 +33,47 @@ public class SocketHandler extends TextWebSocketHandler {
 
 		// orderbook ask update event
 		if (!isSnapshotEvent && !isSystemEvent(message) && isAskUpdateEvent) {
-
-			JSONArray jsonarray = new JSONArray(message.getPayload());
-			String pair = (String) jsonarray.get(3);
-			JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
-
-			// fetch asks
-			JSONArray asksContainer = snapshotContainer.getJSONArray("a");
-			Iterator<Object> asksIterator = asksContainer.iterator();
-			while (asksIterator.hasNext()) {
-				JSONArray ask = (JSONArray) asksIterator.next();
-				orderBookService.handleAskUpdateEvent(pair,
-						new OrderBookRecord(Double.valueOf((String) ask.get(0)), Double.valueOf((String) ask.get(1))));
-			}
+			handleAskUpdateEvent(message);
 		}
 
 		// orderbook bid update event
 		if (!isSnapshotEvent && !isSystemEvent(message) && isBidUpdateEvent) {
-
-			JSONArray jsonarray = new JSONArray(message.getPayload());
-			String pair = (String) jsonarray.get(3);
-			JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
-
-			// fetch bids
-			JSONArray bidsContainer = snapshotContainer.getJSONArray("b");
-			Iterator<Object> bidsIterator = bidsContainer.iterator();
-			while (bidsIterator.hasNext()) {
-				JSONArray bid = (JSONArray) bidsIterator.next();
-				orderBookService.handleAskUpdateEvent(pair,
-						new OrderBookRecord(Double.valueOf((String) bid.get(0)), Double.valueOf((String) bid.get(1))));
-			}
+			handleBidUpdateEvent(message);
 		}
 
 		orderBookService.printOrderBook();
+	}
+
+	private void handleBidUpdateEvent(TextMessage message) {
+		JSONArray jsonarray = new JSONArray(message.getPayload());
+		String pair = (String) jsonarray.get(3);
+		JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
+
+		// fetch bids
+		JSONArray bidsContainer = snapshotContainer.getJSONArray("b");
+		Iterator<Object> bidsIterator = bidsContainer.iterator();
+		while (bidsIterator.hasNext()) {
+			JSONArray bid = (JSONArray) bidsIterator.next();
+			orderBookService.handleUpdateEvent(pair,
+					new OrderBookRecord(Double.valueOf((String) bid.get(0)), Double.valueOf((String) bid.get(1))),
+					false);
+		}
+	}
+
+	private void handleAskUpdateEvent(TextMessage message) {
+		JSONArray jsonarray = new JSONArray(message.getPayload());
+		String pair = (String) jsonarray.get(3);
+		JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
+
+		// fetch asks
+		JSONArray asksContainer = snapshotContainer.getJSONArray("a");
+		Iterator<Object> asksIterator = asksContainer.iterator();
+		while (asksIterator.hasNext()) {
+			JSONArray ask = (JSONArray) asksIterator.next();
+			orderBookService.handleUpdateEvent(pair,
+					new OrderBookRecord(Double.valueOf((String) ask.get(0)), Double.valueOf((String) ask.get(1))),
+					true);
+		}
 	}
 
 	private boolean isSystemEvent(TextMessage message) {
