@@ -50,7 +50,7 @@ public class KrakenOrderBookService {
 
 	public void handleSnapshotEvent(String pair, OrderBookRecord record, boolean isAsk) {
 		if (orderBooks.stream().anyMatch(orderBook -> orderBook.getCurrencyPair().equals(pair))) {
-			// if orderbook for that currency pair already exists, add the record to it
+			// if orderbook for that currency pair already exists, add record to it
 			for (KrakenOrderBook krakenOrderBook : orderBooks) {
 				if (krakenOrderBook.getCurrencyPair().equals(pair)) {
 					if (isAsk) {
