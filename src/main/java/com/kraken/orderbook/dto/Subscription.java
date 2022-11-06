@@ -1,10 +1,10 @@
 package com.kraken.orderbook.dto;
 
-public class SubscriptionDto {
+public class Subscription {
 
 	private String name;
 
-	public SubscriptionDto(String name) {
+	public Subscription(String name) {
 		this.name = name;
 	}
 

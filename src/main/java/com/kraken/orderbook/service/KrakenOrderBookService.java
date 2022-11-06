@@ -16,10 +16,10 @@ public class KrakenOrderBookService {
 	public void handleUpdateEvent(String pair, OrderBookRecord updateData, boolean isAsk) {
 		for (KrakenOrderBook orderBook : orderBooks) {
 			if (orderBook.getCurrencyPair().equals(pair)) {
-				
-				//fetch the proper order book
-				List<OrderBookRecord> records = isAsk? orderBook.getAsks() : orderBook.getBids();
-				
+
+				// fetch the proper order book
+				List<OrderBookRecord> records = isAsk ? orderBook.getAsks() : orderBook.getBids();
+
 				// handle delete event
 				if (updateData.getVolume().equals(0.0d)) {
 					records.removeIf(record -> record.getPrice().equals(updateData.getPrice()));
@@ -50,6 +50,7 @@ public class KrakenOrderBookService {
 
 	public void handleSnapshotEvent(String pair, OrderBookRecord record, boolean isAsk) {
 		if (orderBooks.stream().anyMatch(orderBook -> orderBook.getCurrencyPair().equals(pair))) {
+			// if orderbook for that currency pair already exists, add the record to it
 			for (KrakenOrderBook krakenOrderBook : orderBooks) {
 				if (krakenOrderBook.getCurrencyPair().equals(pair)) {
 					if (isAsk) {
@@ -60,6 +61,8 @@ public class KrakenOrderBookService {
 				}
 			}
 		} else {
+			// if orderbook for that currency pair does not exist or orderbook is empty
+			// create new book for this pair and add record to it
 			KrakenOrderBook orderBook = new KrakenOrderBook(pair);
 			if (isAsk) {
 				orderBook.addAsk(record);
@@ -115,12 +118,11 @@ public class KrakenOrderBookService {
 			System.out.println("<------------------------------------->");
 		}
 	}
-	
 
 	public List<KrakenOrderBook> getOrderBooks() {
 		return orderBooks;
 	}
-	
+
 	public void addOrderBook(KrakenOrderBook orderBook) {
 		this.orderBooks.add(orderBook);
 	}

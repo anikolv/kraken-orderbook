@@ -5,12 +5,12 @@ import java.util.List;
 public class OrderBookRequest {
 
 	private String event;
-	private SubscriptionDto subscription;
+	private Subscription subscription;
 	private List<String> pair;
 
 	public OrderBookRequest(String event, String subscription, List<String> pair) {
 		this.event = event;
-		this.subscription = new SubscriptionDto(subscription);
+		this.subscription = new Subscription(subscription);
 		this.pair = pair;
 	}
 
@@ -22,11 +22,11 @@ public class OrderBookRequest {
 		this.event = event;
 	}
 
-	public SubscriptionDto getSubscription() {
+	public Subscription getSubscription() {
 		return subscription;
 	}
 
-	public void setSubscription(SubscriptionDto subscription) {
+	public void setSubscription(Subscription subscription) {
 		this.subscription = subscription;
 	}
 

@@ -15,10 +15,11 @@ import com.kraken.orderbook.domain.OrderBookRecord;
 @RunWith(SpringRunner.class)
 public class KrakenOrderBookServiceTest {
 	
-	private KrakenOrderBookService orderBookService = new KrakenOrderBookService();
 	private static Double PRICE = 2.345;
 	private static Double VOLUME = 4.322;
 	private static String PAIR = "ETC/USD";
+	
+	private KrakenOrderBookService orderBookService = new KrakenOrderBookService();
 
 	@Test
 	public void testHandleAskSnapshotEvent() {
@@ -45,7 +46,7 @@ public class KrakenOrderBookServiceTest {
 	}
 	
 	@Test
-	public void testHandleUpdateEvent() {		
+	public void testHandleAskUpdateEvent() {		
 		//test insert handler
 		orderBookService.addOrderBook(new KrakenOrderBook(PAIR));
 		orderBookService.handleUpdateEvent(PAIR, new OrderBookRecord(PRICE, VOLUME), true);
@@ -75,6 +76,39 @@ public class KrakenOrderBookServiceTest {
 		assertTrue(orderBooks.size() == 1);
 		assertEquals(PAIR, orderBooks.stream().findFirst().get().getCurrencyPair());
 		assertTrue(orderBooks.stream().findFirst().get().getAsks().isEmpty());
+	}
+	
+	@Test
+	public void testHandleBidUpdateEvent() {		
+		//test insert handler
+		orderBookService.addOrderBook(new KrakenOrderBook(PAIR));
+		orderBookService.handleUpdateEvent(PAIR, new OrderBookRecord(PRICE, VOLUME), false);
+		
+		List<KrakenOrderBook> orderBooks = orderBookService.getOrderBooks();
+		
+		assertTrue(orderBooks.size() == 1);
+		assertEquals(PAIR, orderBooks.stream().findFirst().get().getCurrencyPair());
+		assertTrue(orderBooks.stream().findFirst().get().getBids().size() == 1);
+		assertEquals(PRICE, orderBooks.stream().findFirst().get().getBids().stream().findFirst().get().getPrice());
+		assertEquals(VOLUME, orderBooks.stream().findFirst().get().getBids().stream().findFirst().get().getVolume());
+		
+		//test update handler
+		Double newVolume = 6.322;
+		orderBookService.handleUpdateEvent(PAIR, new OrderBookRecord(PRICE, newVolume), false);
+		
+		assertTrue(orderBooks.size() == 1);
+		assertEquals(PAIR, orderBooks.stream().findFirst().get().getCurrencyPair());
+		assertTrue(orderBooks.stream().findFirst().get().getBids().size() == 1);
+		assertEquals(PRICE, orderBooks.stream().findFirst().get().getBids().stream().findFirst().get().getPrice());
+		assertEquals(newVolume, orderBooks.stream().findFirst().get().getBids().stream().findFirst().get().getVolume());
+		
+		//test delete handler
+		Double zeroVolume = 0.0;
+		orderBookService.handleUpdateEvent(PAIR, new OrderBookRecord(PRICE, zeroVolume), false);
+		
+		assertTrue(orderBooks.size() == 1);
+		assertEquals(PAIR, orderBooks.stream().findFirst().get().getCurrencyPair());
+		assertTrue(orderBooks.stream().findFirst().get().getBids().isEmpty());
 	}
 
 }

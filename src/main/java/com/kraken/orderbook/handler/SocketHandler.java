@@ -43,14 +43,40 @@ public class SocketHandler extends TextWebSocketHandler {
 
 		orderBookService.printOrderBook();
 	}
-
-	private void handleBidUpdateEvent(TextMessage message) {
+	
+	private void handleOrderbookSnapshotEvent(TextMessage message) {
+		// fetch snapshot data
 		JSONArray jsonarray = new JSONArray(message.getPayload());
 		String pair = (String) jsonarray.get(3);
 		JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
 
+		// process asks
+		JSONArray asksContainer = snapshotContainer.getJSONArray("as");
+		Iterator<Object> asksIterator = asksContainer.iterator();
+		while (asksIterator.hasNext()) {
+			JSONArray ask = (JSONArray) asksIterator.next();
+			orderBookService.handleSnapshotEvent(pair,
+					new OrderBookRecord(Double.valueOf((String) ask.get(0)), Double.valueOf((String) ask.get(1))), true);
+		}
+
+		// process bids
+		JSONArray bidsContainer = snapshotContainer.getJSONArray("bs");
+		Iterator<Object> bidsIterator = bidsContainer.iterator();
+		while (bidsIterator.hasNext()) {
+			JSONArray bid = (JSONArray) bidsIterator.next();
+			orderBookService.handleSnapshotEvent(pair,
+					new OrderBookRecord(Double.valueOf((String) bid.get(0)), Double.valueOf((String) bid.get(1))), false);
+		}
+	}
+	
+	private void handleBidUpdateEvent(TextMessage message) {
+		// fetch update data
+		JSONArray jsonarray = new JSONArray(message.getPayload());
+		String pair = (String) jsonarray.get(3);
+		JSONObject updateDataContainer = (JSONObject) jsonarray.get(1);
+
 		// fetch bids
-		JSONArray bidsContainer = snapshotContainer.getJSONArray("b");
+		JSONArray bidsContainer = updateDataContainer.getJSONArray("b");
 		Iterator<Object> bidsIterator = bidsContainer.iterator();
 		while (bidsIterator.hasNext()) {
 			JSONArray bid = (JSONArray) bidsIterator.next();
@@ -61,12 +87,13 @@ public class SocketHandler extends TextWebSocketHandler {
 	}
 
 	private void handleAskUpdateEvent(TextMessage message) {
+		// fetch update data
 		JSONArray jsonarray = new JSONArray(message.getPayload());
 		String pair = (String) jsonarray.get(3);
-		JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
+		JSONObject updateDataContainer = (JSONObject) jsonarray.get(1);
 
 		// fetch asks
-		JSONArray asksContainer = snapshotContainer.getJSONArray("a");
+		JSONArray asksContainer = updateDataContainer.getJSONArray("a");
 		Iterator<Object> asksIterator = asksContainer.iterator();
 		while (asksIterator.hasNext()) {
 			JSONArray ask = (JSONArray) asksIterator.next();
@@ -82,38 +109,6 @@ public class SocketHandler extends TextWebSocketHandler {
 		boolean isHeartBeatEvent = message.getPayload().contains("heartbeat");
 
 		return isConnectionStatusEvent || isSubscriptionStatusEvent || isHeartBeatEvent;
-	}
-
-	private void handleOrderbookSnapshotEvent(TextMessage message) {
-		JSONArray jsonarray = new JSONArray(message.getPayload());
-		String pair = (String) jsonarray.get(3);
-		JSONObject snapshotContainer = (JSONObject) jsonarray.get(1);
-
-		// fetch asks
-		JSONArray asksContainer = snapshotContainer.getJSONArray("as");
-
-		Iterator<Object> asksIterator = asksContainer.iterator();
-		while (asksIterator.hasNext()) {
-			JSONArray ask = (JSONArray) asksIterator.next();
-			String price = (String) ask.get(0);
-			String volume = (String) ask.get(1);
-
-			orderBookService.handleSnapshotEvent(pair,
-					new OrderBookRecord(Double.valueOf(price), Double.valueOf(volume)), true);
-		}
-
-		// fetch bids
-		JSONArray bidsContainer = snapshotContainer.getJSONArray("bs");
-
-		Iterator<Object> bidsIterator = bidsContainer.iterator();
-		while (bidsIterator.hasNext()) {
-			JSONArray bid = (JSONArray) bidsIterator.next();
-			String price = (String) bid.get(0);
-			String volume = (String) bid.get(1);
-
-			orderBookService.handleSnapshotEvent(pair,
-					new OrderBookRecord(Double.valueOf(price), Double.valueOf(volume)), false);
-		}
 	}
 
 	@Override
